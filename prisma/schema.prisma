@@ -14,21 +14,27 @@ datasource db {
 }
 
 model fct_charge {
-  id           Int     @id @default(autoincrement())
-  value        Decimal @db.Decimal(12, 2)
-  initialDate  String  @map("initial_date")
-  subscriberId Int     @map("subscriber_id")
+  id           Int         @id @default(autoincrement())
+  value        Decimal?    @db.Decimal(12, 2)
+  initialDate  String?     @map("initial_date")
+  subscriberId Int?        @map("subscriber_id")
+  statusId     Int?
+  status       dim_status? @relation(fields: [statusId], references: [id])
+  cicleId      Int?
+  cicle        dim_cicle?  @relation(fields: [cicleId], references: [id])
 }
 
 model dim_status {
-  id         Int    @id @default(autoincrement())
-  status     String
-  statusDate String @map("status_date")
+  id         Int          @id @default(autoincrement())
+  status     String?
+  statusDate String?      @map("status_date")
+  fct_charge fct_charge[]
 }
 
 model dim_cicle {
-  id             Int    @id @default(autoincrement())
-  chargedAtXDays Int    @map("charged_at_x_days")
-  nextCicle      String @map("next_cicle")
-  cancelDate     String @map("cancel_date")
+  id             Int          @id @default(autoincrement())
+  chargedAtXDays Int?         @map("charged_at_x_days")
+  nextCicle      String?      @map("next_cicle")
+  cancelDate     String?      @map("cancel_date")
+  fct_charge     fct_charge[]
 }
