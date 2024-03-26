@@ -25,10 +25,11 @@ model fct_charge {
 }
 
 model dim_status {
-  id         Int          @id @default(autoincrement())
-  status     String?
-  statusDate String?      @map("status_date")
-  fct_charge fct_charge[]
+  id           Int          @id @default(autoincrement())
+  status       String?
+  statusDate   String?      @map("status_date")
+  subscriberId Int?         @map("subscriber_id")
+  fct_charge   fct_charge[]
 }
 
 model dim_cicle {
@@ -36,5 +37,6 @@ model dim_cicle {
   chargedAtXDays Int?         @map("charged_at_x_days")
   nextCicle      String?      @map("next_cicle")
   cancelDate     String?      @map("cancel_date")
+  subscriberId   Int?         @map("subscriber_id")
   fct_charge     fct_charge[]
 }

@@ -23,7 +23,7 @@ export class SpreadsheetService {
     const chargeData = [];
     const statusData = [];
     const cicleData = [];
-    console.log(jsonData);
+
     jsonData?.map((o) => {
       const initialDate = dayjs(o['data início']).format('YYYY-MM-DD HH:mm');
       const status = o.status;
@@ -43,21 +43,21 @@ export class SpreadsheetService {
           initialDate,
           subscriberId,
         },
-        dim_status: { status, statusDate },
+        dim_status: { status, statusDate, subscriberId },
         dim_cicle: {
           chargedAtXDays,
           nextCicle,
           cancelDate,
+          subscriberId,
         },
       };
+      console.log(formattedData);
 
       chargeData.push(formattedData.fct_charge);
-      cicleData.push(formattedData.dim_status);
+      cicleData.push(formattedData.dim_cicle);
+      statusData.push(formattedData.dim_status);
     });
-    const uniqueStatuses = [...new Set(jsonData.map((o) => o.status))];
-    uniqueStatuses.forEach((status) => {
-      statusData.push({ status });
-    });
+
     return this.spreadsheetRepository.create(chargeData, statusData, cicleData);
   }
 }
