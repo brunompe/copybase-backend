@@ -14,6 +14,7 @@ export class SpreadsheetController {
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
   uploadFile(@UploadedFile() file: Express.Multer.File) {
+    console.log(file);
     return this.spreadsheetService.create(file);
   }
 }
