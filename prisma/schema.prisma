@@ -40,3 +40,11 @@ model dim_cicle {
   subscriberId   Int?         @map("subscriber_id")
   fct_charge     fct_charge[]
 }
+
+model vw_monthly_metrics {
+  id                     Int      @id @default(autoincrement())
+  month                  DateTime @map("month")
+  activeSubscribersCount Int
+  mrr                    Decimal
+  churnRate              Decimal
+}

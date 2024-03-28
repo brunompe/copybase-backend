@@ -1,5 +1,6 @@
 import {
   Controller,
+  Get,
   Post,
   UploadedFile,
   UseInterceptors,
@@ -13,8 +14,8 @@ export class SpreadsheetController {
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
-  uploadFile(@UploadedFile() file: Express.Multer.File) {
-    console.log(file);
-    return this.spreadsheetService.create(file);
+  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+    const result = await this.spreadsheetService.create(file);
+    return result;
   }
 }

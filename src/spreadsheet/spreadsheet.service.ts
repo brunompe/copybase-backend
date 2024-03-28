@@ -10,6 +10,9 @@ export class SpreadsheetService {
   async create(file) {
     const data = await this.fileToJson(file);
     const correctData = await this.processData(data);
+    const activeSubscribers = await this.activeSubscribers(correctData);
+    const churnRate = await this.calculateChurnRate(correctData);
+    return { activeSubscribers, churnRate };
   }
 
   async fileToJson(file) {
@@ -51,13 +54,61 @@ export class SpreadsheetService {
           subscriberId,
         },
       };
-      console.log(formattedData);
 
       chargeData.push(formattedData.fct_charge);
       cicleData.push(formattedData.dim_cicle);
       statusData.push(formattedData.dim_status);
     });
 
-    return this.spreadsheetRepository.create(chargeData, statusData, cicleData);
+    await this.spreadsheetRepository.create(chargeData, statusData, cicleData);
+    await this.calculateMonthlyMetrics();
+
+    return { chargeData, cicleData, statusData };
+  }
+
+  async calculateMonthlyMetrics() {
+    const months = await this.spreadsheetRepository.getDistinctMonths();
+
+    months.map(async (month) => {
+      const activeSubscribersCount =
+        await this.spreadsheetRepository.getActiveSubscribersCount(month);
+      const mrrData = await this.spreadsheetRepository.getMrrData(month);
+      const churnRate = await this.calculateChurnRate(month);
+
+      await this.spreadsheetRepository.createMonthlyMetrics(
+        month,
+        activeSubscribersCount,
+        mrrData._sum.value,
+        churnRate,
+      );
+    });
+  }
+
+  async calculateChurnRate(month) {
+    const previousMonth = dayjs(month).subtract(1, 'month').format('YYYY-MM');
+    const churnedSubscribers =
+      await this.spreadsheetRepository.getChurnedSubscribers(previousMonth);
+    const activeSubscribers =
+      await this.spreadsheetRepository.getActiveSubscribersCount(previousMonth);
+
+    return (
+      churnedSubscribers.length /
+        (activeSubscribers + churnedSubscribers.length) || 0
+    );
+  }
+
+  async activeSubscribers({ statusData }) {
+    const currentMonth = dayjs().format('YYYY-MM');
+
+    const activeSubcribers = statusData.filter((e) => e.status === 'Ativa');
+    const activeSubscriberIds = activeSubcribers.map(
+      (subscriber) => subscriber.subscriberId,
+    );
+
+    const mrrData = await this.spreadsheetRepository.getMrrData(currentMonth);
+    return {
+      activeSubscriberCount: activeSubcribers.length,
+      mrr: mrrData._sum.value || 0,
+    };
   }
 }
